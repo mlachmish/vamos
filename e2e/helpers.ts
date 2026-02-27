@@ -48,8 +48,7 @@ export async function openScoreboard(page: Page, matchId: string) {
 export async function scorePoint(page: Page, team: 'a' | 'b') {
   await page.getByTestId(`score-team-${team}`).click();
   // Wait for: debounce (400ms) + DB round-trip + confetti + real-time subscription updates
-  // Increased from 500ms to 800ms to account for all async operations
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(650);
 }
 
 /**

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createMatch } from '@/lib/match-service';
-import { MatchSettings, DEFAULT_SETTINGS } from '@/lib/types';
+import { MatchSettings, DEFAULT_SETTINGS, Team } from '@/lib/types';
 
 type FormatPreset = 'standard' | 'golden_point' | 'short_sets' | 'single_set';
 
@@ -39,6 +39,7 @@ export default function Home() {
   const [teamBP1, setTeamBP1] = useState('');
   const [teamBP2, setTeamBP2] = useState('');
   const [format, setFormat] = useState<FormatPreset>('standard');
+  const [servingTeam, setServingTeam] = useState<Team>('a');
   const [creating, setCreating] = useState(false);
 
   async function handleCreate() {
@@ -49,7 +50,8 @@ export default function Home() {
       const match = await createMatch(
         { name: `${teamAP1.trim()} & ${teamAP2.trim()}`, player_1: teamAP1.trim(), player_2: teamAP2.trim() },
         { name: `${teamBP1.trim()} & ${teamBP2.trim()}`, player_1: teamBP1.trim(), player_2: teamBP2.trim() },
-        FORMAT_PRESETS[format].settings
+        FORMAT_PRESETS[format].settings,
+        servingTeam
       );
       router.push(`/match/${match.id}/scoreboard`);
     } catch {
@@ -65,7 +67,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center p-6">
+    <main className="min-h-screen flex flex-col items-center px-4 py-6">
       <div className="w-full max-w-md space-y-8 my-auto">
         {/* Logo */}
         <div className="text-center space-y-2">
@@ -100,7 +102,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="space-y-5 bg-surface p-6 rounded-2xl">
+          <div className="space-y-5 bg-surface p-5 rounded-2xl overflow-hidden">
             <h2 className="text-xl font-bold">New Match</h2>
 
             <div className="space-y-3">
@@ -112,7 +114,7 @@ export default function Home() {
                     placeholder="Player name..."
                     value={teamAP1}
                     onChange={(e) => setTeamAP1(e.target.value)}
-                    className="flex-1 py-3 px-4 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
+                    className="flex-1 min-w-0 py-3 px-3 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
                     autoFocus
                   />
                   <input
@@ -120,7 +122,7 @@ export default function Home() {
                     placeholder="Player name..."
                     value={teamAP2}
                     onChange={(e) => setTeamAP2(e.target.value)}
-                    className="flex-1 py-3 px-4 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
+                    className="flex-1 min-w-0 py-3 px-3 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
                   />
                 </div>
               </div>
@@ -132,14 +134,14 @@ export default function Home() {
                     placeholder="Player name..."
                     value={teamBP1}
                     onChange={(e) => setTeamBP1(e.target.value)}
-                    className="flex-1 py-3 px-4 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
+                    className="flex-1 min-w-0 py-3 px-3 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
                   />
                   <input
                     type="text"
                     placeholder="Player name..."
                     value={teamBP2}
                     onChange={(e) => setTeamBP2(e.target.value)}
-                    className="flex-1 py-3 px-4 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
+                    className="flex-1 min-w-0 py-3 px-3 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
                   />
                 </div>
               </div>
@@ -162,6 +164,32 @@ export default function Home() {
                     <div className="text-xs opacity-70 mt-0.5">{preset.description}</div>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-foreground/50 block">First Serve</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setServingTeam('a')}
+                  className={`py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
+                    servingTeam === 'a'
+                      ? 'bg-team-a/20 border-2 border-team-a text-team-a'
+                      : 'bg-background border-2 border-surface-light text-foreground/70 hover:border-foreground/30'
+                  }`}
+                >
+                  {teamAP1.trim() && teamAP2.trim() ? `${teamAP1.trim()} & ${teamAP2.trim()}` : 'Team A'}
+                </button>
+                <button
+                  onClick={() => setServingTeam('b')}
+                  className={`py-2.5 px-3 rounded-xl text-sm font-semibold transition-all ${
+                    servingTeam === 'b'
+                      ? 'bg-team-b/20 border-2 border-team-b text-team-b'
+                      : 'bg-background border-2 border-surface-light text-foreground/70 hover:border-foreground/30'
+                  }`}
+                >
+                  {teamBP1.trim() && teamBP2.trim() ? `${teamBP1.trim()} & ${teamBP2.trim()}` : 'Team B'}
+                </button>
               </div>
             </div>
 

@@ -87,12 +87,12 @@ export function createInitialSetScore(): SetScore {
   };
 }
 
-export function createInitialScore(): MatchScore {
+export function createInitialScore(servingTeam: Team = 'a'): MatchScore {
   return {
     sets: [createInitialSetScore()],
     current_set: 0,
     current_game: createInitialGameScore(),
-    serving_team: 'a',
+    serving_team: servingTeam,
     winner: null,
   };
 }

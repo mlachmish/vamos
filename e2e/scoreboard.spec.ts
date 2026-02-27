@@ -32,16 +32,16 @@ test.describe('Scoreboard Display', () => {
     await expect(page.getByText('Game 1 · Set 1')).toBeVisible();
   });
 
-  test('shows QR Remote button', async ({ page }) => {
+  test('shows Share button', async ({ page }) => {
     await createMatchViaUI(page);
 
-    await expect(page.getByText('QR Remote')).toBeVisible();
+    await expect(page.getByText('Share')).toBeVisible();
   });
 
-  test('QR button opens modal with QR code and link', async ({ page }) => {
+  test('Share button opens modal with QR code and link', async ({ page }) => {
     const matchId = await createMatchViaUI(page);
 
-    await page.getByText('QR Remote').click();
+    await page.getByText('Share').click();
 
     await expect(page.getByText('Scan to join')).toBeVisible();
     await expect(page.getByText('Copy link')).toBeVisible();
@@ -49,10 +49,10 @@ test.describe('Scoreboard Display', () => {
     await expect(page.getByText(`/match/${matchId}/scoreboard`)).toBeVisible();
   });
 
-  test('QR modal closes when clicking backdrop', async ({ page }) => {
+  test('Share modal closes when clicking backdrop', async ({ page }) => {
     await createMatchViaUI(page);
 
-    await page.getByText('QR Remote').click();
+    await page.getByText('Share').click();
     await expect(page.getByText('Scan to join')).toBeVisible();
 
     // Click the backdrop (the outer overlay div)

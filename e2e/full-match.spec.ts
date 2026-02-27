@@ -3,6 +3,7 @@ import { createMatchViaUI, openScoreboard, scoreGame } from './helpers';
 
 test.describe('Full Match Flow', () => {
   test('play and win a complete short sets match', async ({ browser }) => {
+    test.setTimeout(60000); // Increased timeout for long match
     // Create a Short Sets match (best of 3, first to 4 games per set)
     const setupPage = await browser.newPage();
     const matchId = await createMatchViaUI(setupPage, 'Carlos', 'Diego', 'Sofia', 'Luna', 'Short Sets');
@@ -41,6 +42,7 @@ test.describe('Full Match Flow', () => {
   });
 
   test('play a 3-set match where team B wins', async ({ browser }) => {
+    test.setTimeout(60000); // Increased timeout for long match
     const setupPage = await browser.newPage();
     const matchId = await createMatchViaUI(setupPage, 'Pablo', 'Lucia', 'Marco', 'Elena', 'Short Sets');
     await setupPage.close();
@@ -74,6 +76,7 @@ test.describe('Full Match Flow', () => {
   });
 
   test('New Match link on completion screen navigates to home', async ({ browser }) => {
+    test.setTimeout(45000); // Increased timeout for match completion
     const setupPage = await browser.newPage();
     const matchId = await createMatchViaUI(setupPage, 'Rapido', 'Veloz', 'Lento', 'Calmo', 'Single Set');
     await setupPage.close();

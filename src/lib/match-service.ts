@@ -1,7 +1,7 @@
 // ===== Vamos — Match CRUD + Realtime =====
 
 import { supabase } from './supabase';
-import { Match, MatchSettings, TeamInfo, DEFAULT_SETTINGS, createInitialScore } from './types';
+import { Match, MatchSettings, TeamInfo, Team, DEFAULT_SETTINGS, createInitialScore } from './types';
 import { nanoid } from 'nanoid';
 
 // ===== Create Match =====
@@ -9,7 +9,8 @@ import { nanoid } from 'nanoid';
 export async function createMatch(
   teamA: TeamInfo,
   teamB: TeamInfo,
-  settings: Partial<MatchSettings> = {}
+  settings: Partial<MatchSettings> = {},
+  servingTeam: Team = 'a'
 ): Promise<Match> {
   const match: Match = {
     id: nanoid(10),
@@ -17,7 +18,7 @@ export async function createMatch(
     status: 'in_progress',
     team_a: teamA,
     team_b: teamB,
-    score: createInitialScore(),
+    score: createInitialScore(servingTeam),
     point_history: [],
     settings: { ...DEFAULT_SETTINGS, ...settings },
   };

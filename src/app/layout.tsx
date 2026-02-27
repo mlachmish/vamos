@@ -15,6 +15,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Vamos — Padel Scoreboard",
   description: "Keep score in your friendly padel matches with a beautiful scoreboard and remote control.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Vamos",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({
@@ -24,6 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#0a0f1a" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
