@@ -35,10 +35,14 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
     const totalGames = match.score.sets.reduce((sum, s) => sum + s.games_a + s.games_b, 0);
     const completedSets = match.score.sets.filter(s => s.winner).length;
 
-    // Match win — big celebration
+    // Match win — big initial burst + looping celebration
     if (match.score.winner) {
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       setTimeout(() => confetti({ particleCount: 100, spread: 120, origin: { y: 0.5 } }), 300);
+      const loop = setInterval(() => {
+        confetti({ particleCount: 30, spread: 80, origin: { x: Math.random(), y: Math.random() * 0.4 + 0.3 }, gravity: 0.8 });
+      }, 1500);
+      return () => clearInterval(loop);
     }
     // Set won — medium burst
     else if (prevCompletedSetsRef.current !== null && completedSets > prevCompletedSetsRef.current) {
@@ -53,17 +57,14 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
     prevCompletedSetsRef.current = completedSets;
   }, [match]);
 
-  // Clock and match timer
-  const [clockTime, setClockTime] = useState('');
+  // Match timer
   const [elapsed, setElapsed] = useState('');
   useEffect(() => {
     if (!match) return;
     const start = new Date(match.created_at).getTime();
     const tick = () => {
-      const now = new Date();
-      setClockTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       if (!match.score.winner) {
-        const diff = Math.floor((now.getTime() - start) / 1000);
+        const diff = Math.floor((Date.now() - start) / 1000);
         const mins = Math.floor(diff / 60);
         const secs = diff % 60;
         setElapsed(`${mins}:${secs.toString().padStart(2, '0')}`);
@@ -118,7 +119,6 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
   }
 
   const gameScore = getGameScoreDisplay(match.score.current_game);
-  const currentSet = match.score.sets[match.score.current_set];
   const shareUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/match/${id}/scoreboard`
     : '';
@@ -182,39 +182,66 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      {/* Set Scores Header */}
-      <div className="flex justify-center gap-4 pt-4 pb-3 landscape:pt-2 landscape:pb-2">
-        {match.score.sets.map((set, i) => {
-          const isCurrentSet = i === match.score.current_set;
-          const isCompleted = set.winner !== null;
-          const teamAWinning = set.games_a > set.games_b;
-          const teamBWinning = set.games_b > set.games_a;
+      {/* Header — Set scores, time, and actions */}
+      <div className="relative pt-4 pb-2 landscape:pt-2 landscape:pb-1">
+        {/* Action buttons — top right corner */}
+        <div className="absolute top-2 right-3 flex items-center gap-1.5 z-10">
+          <button
+            onClick={undo}
+            disabled={match.point_history.length === 0}
+            className="text-foreground/25 hover:text-foreground/60 transition-colors p-1.5 rounded-lg disabled:opacity-30"
+            data-testid="undo-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H7" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 6l-4 4 4 4" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowQR(true)}
+            className="text-foreground/25 hover:text-foreground/60 transition-colors p-1.5 rounded-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+        </div>
 
-          return (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <div className={`text-sm uppercase tracking-wider font-bold ${
-                isCurrentSet ? 'text-accent' : 'text-foreground/40'
-              }`}>
-                Set {i + 1}
-              </div>
-              <div className={`px-5 py-2 rounded-xl font-mono font-bold transition-all ${
-                isCurrentSet ? 'bg-surface-light ring-1 ring-accent/30' : 'bg-surface'
-              } ${isCompleted && !isCurrentSet ? 'opacity-60' : ''}`}>
-                <span className={`transition-all ${
-                  teamAWinning ? 'text-team-a text-2xl font-black' : 'text-team-a/80 text-xl'
+        {/* Set scores */}
+        <div className="flex justify-center gap-4">
+          {match.score.sets.map((set, i) => {
+            const isCurrentSet = i === match.score.current_set;
+            const isCompleted = set.winner !== null;
+            const teamAWinning = set.games_a > set.games_b;
+            const teamBWinning = set.games_b > set.games_a;
+
+            return (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div className={`text-sm uppercase tracking-wider font-bold ${
+                  isCurrentSet ? 'text-accent' : 'text-foreground/40'
                 }`}>
-                  {set.games_a}
-                </span>
-                <span className="text-foreground/30 mx-2 text-xl">-</span>
-                <span className={`transition-all ${
-                  teamBWinning ? 'text-team-b text-2xl font-black' : 'text-team-b/80 text-xl'
-                }`}>
-                  {set.games_b}
-                </span>
+                  Set {i + 1}
+                </div>
+                <div className={`px-5 py-2 rounded-xl font-mono font-bold transition-all ${
+                  isCurrentSet ? 'bg-surface-light ring-1 ring-accent/30' : 'bg-surface'
+                } ${isCompleted && !isCurrentSet ? 'opacity-60' : ''}`}>
+                  <span className={`transition-all ${
+                    teamAWinning ? 'text-team-a text-2xl font-black' : 'text-team-a/80 text-xl'
+                  }`}>
+                    {set.games_a}
+                  </span>
+                  <span className="text-foreground/30 mx-2 text-xl">-</span>
+                  <span className={`transition-all ${
+                    teamBWinning ? 'text-team-b text-2xl font-black' : 'text-team-b/80 text-xl'
+                  }`}>
+                    {set.games_b}
+                  </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
       </div>
 
       {/* Tiebreak Banner */}
@@ -244,12 +271,23 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           data-testid="score-team-a"
         >
           {tapPulseA && <div className="absolute inset-0 bg-team-a/30 animate-tap-pulse" />}
-          <div className="flex items-center justify-center gap-3">
-            {match.score.serving_team === 'a' && (
-              <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
-            )}
-            <div className="text-2xl font-bold text-team-a uppercase tracking-wide">
-              {match.team_a.name}
+          <div className="flex items-center justify-center gap-4">
+            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+              match.score.serving_team === 'a' && match.score.serving_player_a === 1 ? 'text-accent' : 'text-team-a'
+            }`}>
+              {match.score.serving_team === 'a' && match.score.serving_player_a === 1 && (
+                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              )}
+              {match.team_a.player_1}
+            </div>
+            <span className="text-foreground/20 text-lg">&</span>
+            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+              match.score.serving_team === 'a' && match.score.serving_player_a === 2 ? 'text-accent' : 'text-team-a'
+            }`}>
+              {match.team_a.player_2}
+              {match.score.serving_team === 'a' && match.score.serving_player_a === 2 && (
+                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              )}
             </div>
           </div>
           <div
@@ -273,13 +311,24 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           data-testid="score-team-b"
         >
           {tapPulseB && <div className="absolute inset-0 bg-team-b/30 animate-tap-pulse" />}
-          <div className="flex items-center justify-center gap-3">
-            <div className="text-2xl font-bold text-team-b uppercase tracking-wide">
-              {match.team_b.name}
+          <div className="flex items-center justify-center gap-4">
+            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+              match.score.serving_team === 'b' && match.score.serving_player_b === 1 ? 'text-accent' : 'text-team-b'
+            }`}>
+              {match.score.serving_team === 'b' && match.score.serving_player_b === 1 && (
+                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              )}
+              {match.team_b.player_1}
             </div>
-            {match.score.serving_team === 'b' && (
-              <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
-            )}
+            <span className="text-foreground/20 text-lg">&</span>
+            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+              match.score.serving_team === 'b' && match.score.serving_player_b === 2 ? 'text-accent' : 'text-team-b'
+            }`}>
+              {match.team_b.player_2}
+              {match.score.serving_team === 'b' && match.score.serving_player_b === 2 && (
+                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              )}
+            </div>
           </div>
           <div
             key={`score-b-${scorePopKey}`}
@@ -290,40 +339,12 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         </button>
       </div>
 
-      {/* Time Bar */}
-      <div className="flex justify-between items-center px-5 py-2.5 landscape:py-1.5 border-t border-foreground/10">
-        <span className="text-base landscape:text-sm font-mono text-foreground/50">{clockTime}</span>
-        {elapsed && (
-          <span className="text-base landscape:text-sm font-mono text-foreground/50">{elapsed}</span>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-between items-center p-4 landscape:p-2">
-        <div className="text-foreground/30 text-sm">
-          {currentSet && `Game ${currentSet.games_a + currentSet.games_b + 1} · Set ${match.score.current_set + 1}`}
+      {/* Match Timer — bottom bar */}
+      {elapsed && (
+        <div className="flex justify-center items-center py-3 landscape:py-1.5">
+          <span className="text-4xl landscape:text-2xl font-mono font-bold text-foreground/50 tracking-wider">{elapsed}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={undo}
-            disabled={match.point_history.length === 0}
-            className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface disabled:opacity-30 flex items-center gap-1.5"
-            data-testid="undo-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H7" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 6l-4 4 4 4" />
-            </svg>
-            Undo
-          </button>
-          <button
-            onClick={() => setShowQR(true)}
-            className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface"
-          >
-            Share
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

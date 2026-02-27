@@ -4,6 +4,8 @@ export type Team = 'a' | 'b';
 
 export type PadelPoint = '0' | '15' | '30' | '40' | 'AD';
 
+export type PlayerNumber = 1 | 2;
+
 export interface TeamInfo {
   name: string;
   player_1: string;
@@ -38,6 +40,8 @@ export interface MatchScore {
   current_set: number;
   current_game: GameScore;
   serving_team: Team;
+  serving_player_a: PlayerNumber;
+  serving_player_b: PlayerNumber;
   winner: Team | null;
 }
 
@@ -93,6 +97,8 @@ export function createInitialScore(servingTeam: Team = 'a'): MatchScore {
     current_set: 0,
     current_game: createInitialGameScore(),
     serving_team: servingTeam,
+    serving_player_a: 1,
+    serving_player_b: 1,
     winner: null,
   };
 }

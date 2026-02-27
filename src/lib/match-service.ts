@@ -4,6 +4,11 @@ import { supabase } from './supabase';
 import { Match, MatchSettings, TeamInfo, Team, DEFAULT_SETTINGS, createInitialScore } from './types';
 import { nanoid } from 'nanoid';
 
+function backfillServingPlayer(match: Match): void {
+  if (match.score.serving_player_a === undefined) match.score.serving_player_a = 1;
+  if (match.score.serving_player_b === undefined) match.score.serving_player_b = 1;
+}
+
 // ===== Create Match =====
 
 export async function createMatch(
@@ -39,7 +44,9 @@ export async function getMatch(id: string): Promise<Match | null> {
     .single();
 
   if (error) return null;
-  return data as Match;
+  const match = data as Match;
+  backfillServingPlayer(match);
+  return match;
 }
 
 // ===== Update Match =====
@@ -77,7 +84,9 @@ export function subscribeToMatch(
         filter: `id=eq.${matchId}`,
       },
       (payload) => {
-        onUpdate(payload.new as Match);
+        const match = payload.new as Match;
+        backfillServingPlayer(match);
+        onUpdate(match);
       }
     )
     .subscribe((status, err) => {

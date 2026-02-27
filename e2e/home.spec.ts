@@ -19,10 +19,11 @@ test.describe('Home Page', () => {
     await page.getByRole('button', { name: 'New Match' }).click();
 
     await expect(page.getByText('New Match', { exact: false })).toBeVisible();
-    await expect(page.getByText('Team A')).toBeVisible();
-    await expect(page.getByText('Team B')).toBeVisible();
+    await expect(page.locator('label', { hasText: 'Team A' })).toBeVisible();
+    await expect(page.locator('label', { hasText: 'Team B' })).toBeVisible();
     await expect(page.getByPlaceholder('Player name...')).toHaveCount(4);
     await expect(page.getByText('Format')).toBeVisible();
+    await expect(page.getByText('First Serve')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Match' })).toBeVisible();
   });
 
@@ -35,7 +36,7 @@ test.describe('Home Page', () => {
     // Should be back to the main view with the New Match button
     await expect(page.getByRole('button', { name: 'New Match' })).toBeVisible();
     // Setup form should be gone
-    await expect(page.getByText('Team A')).not.toBeVisible();
+    await expect(page.locator('label', { hasText: 'Team A' })).not.toBeVisible();
   });
 
   test('Join navigates to scoreboard view with entered code', async ({ page }) => {

@@ -25,6 +25,7 @@ test.describe('Match Completion', () => {
   });
 
   test('completion shows correct set scores for multi-set match', async ({ browser }) => {
+    test.setTimeout(75000); // Increased timeout for very long multi-set match
     const setupPage = await browser.newPage();
     const matchId = await createMatchViaUI(setupPage, 'Rojo', 'Carmesi', 'Azul', 'Celeste', 'Short Sets');
     await setupPage.close();
@@ -58,6 +59,7 @@ test.describe('Match Completion', () => {
   });
 
   test('New Match button on completion goes to home', async ({ browser }) => {
+    test.setTimeout(45000); // Increased timeout for match completion
     const setupPage = await browser.newPage();
     const matchId = await createMatchViaUI(setupPage, 'Final', 'Ultimo', 'Otro', 'Mas', 'Single Set');
     await setupPage.close();

@@ -158,6 +158,14 @@ function switchServer(current: Team): Team {
   return current === 'a' ? 'b' : 'a';
 }
 
+function toggleServingPlayer(score: MatchScore): void {
+  if (score.serving_team === 'a') {
+    score.serving_player_a = score.serving_player_a === 1 ? 2 : 1;
+  } else {
+    score.serving_player_b = score.serving_player_b === 1 ? 2 : 1;
+  }
+}
+
 // ===== Main: Score a Point =====
 
 export function scorePoint(match: Match, team: Team): Match {
@@ -202,6 +210,7 @@ export function scorePoint(match: Match, team: Team): Match {
       const wasTotalPts = totalPts - 1;
       // Server changes after 1st point, then every 2 points
       if (wasTotalPts === 0 || (wasTotalPts > 0 && wasTotalPts % 2 === 0)) {
+        toggleServingPlayer(score);
         score.serving_team = switchServer(score.serving_team);
       }
     }
@@ -235,6 +244,7 @@ export function scorePoint(match: Match, team: Team): Match {
       score.current_game = createInitialGameScore();
     }
     // Serve switches between games
+    toggleServingPlayer(score);
     score.serving_team = switchServer(score.serving_team);
     return newMatch;
   }
@@ -271,6 +281,7 @@ export function scorePoint(match: Match, team: Team): Match {
   }
 
   // Serve switches between sets
+  toggleServingPlayer(score);
   score.serving_team = switchServer(score.serving_team);
 
   return newMatch;
