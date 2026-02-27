@@ -65,8 +65,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-8">
+    <main className="min-h-screen flex flex-col items-center p-6">
+      <div className="w-full max-w-md space-y-8 my-auto">
         {/* Logo */}
         <div className="text-center space-y-2">
           <h1 className="text-6xl font-bold tracking-tight">VAMOS</h1>

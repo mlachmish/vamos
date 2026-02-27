@@ -1,4 +1,4 @@
-# Padel Score — Playbook
+# Vamos — Playbook
 
 This folder is the single source of truth for all project decisions, plans, and definitions.
 
