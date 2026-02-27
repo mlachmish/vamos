@@ -7,7 +7,8 @@
 - [ ] Scoreboard view — full-screen, beautiful, readable from across the court
 - [ ] Remote control view — simple tap buttons to award points
 - [ ] Real-time sync between scoreboard and remote via shared session
-- [ ] Standard Padel scoring logic (points → games → sets)
+- [ ] Padel scoring logic (points → games → sets)
+- [ ] Format selection at match start (standard deuce, golden point, short sets, single set)
 - [ ] Undo last point
 - [ ] Match completion detection & winner announcement
 - [ ] Session link / QR code sharing
@@ -16,7 +17,7 @@
 > After MVP works great
 
 - [ ] Match history (stored locally or in cloud)
-- [ ] Flexible scoring formats (short sets, golden point, single set)
+- [ ] Additional scoring formats (super tiebreak for 3rd set, custom game counts)
 - [ ] Serve indicator (which team is serving)
 - [ ] Point-by-point log
 - [ ] Dark/light theme

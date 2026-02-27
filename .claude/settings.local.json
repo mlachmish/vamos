@@ -4,7 +4,10 @@
       "Bash(gh auth status 2>&1)",
       "Bash(git config --global user.email 2>&1 && git config --global user.name 2>&1)",
       "Bash(sudo xcodebuild -license accept 2>&1)",
-      "Bash(/usr/bin/git config --global user.email \"mlachmish@gmail.com\" && /usr/bin/git config --global user.name \"Matan Lachmish\" 2>&1)"
+      "Bash(/usr/bin/git config --global user.email \"mlachmish@gmail.com\" && /usr/bin/git config --global user.name \"Matan Lachmish\" 2>&1)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack 2>&1)",
+      "Bash(cd /Users/matanla/Developer/matan && npx create-next-app@latest padel_score_temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack --no-experimental-app 2>&1 <<EOF\nNo\nEOF)",
+      "Bash(*)"
     ]
   }
 }

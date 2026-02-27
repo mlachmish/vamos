@@ -1,0 +1,84 @@
+// ===== Vamos — Match CRUD + Realtime =====
+
+import { supabase } from './supabase';
+import { Match, MatchSettings, TeamInfo, DEFAULT_SETTINGS, createInitialScore } from './types';
+import { nanoid } from 'nanoid';
+
+// ===== Create Match =====
+
+export async function createMatch(
+  teamA: TeamInfo,
+  teamB: TeamInfo,
+  settings: Partial<MatchSettings> = {}
+): Promise<Match> {
+  const match: Match = {
+    id: nanoid(10),
+    created_at: new Date().toISOString(),
+    status: 'in_progress',
+    team_a: teamA,
+    team_b: teamB,
+    score: createInitialScore(),
+    point_history: [],
+    settings: { ...DEFAULT_SETTINGS, ...settings },
+  };
+
+  const { error } = await supabase.from('matches').insert(match);
+  if (error) throw new Error(`Failed to create match: ${error.message}`);
+
+  return match;
+}
+
+// ===== Get Match =====
+
+export async function getMatch(id: string): Promise<Match | null> {
+  const { data, error } = await supabase
+    .from('matches')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data as Match;
+}
+
+// ===== Update Match =====
+
+export async function updateMatch(match: Match): Promise<void> {
+  const { error } = await supabase
+    .from('matches')
+    .update({
+      status: match.status,
+      score: match.score,
+      point_history: match.point_history,
+    })
+    .eq('id', match.id);
+
+  if (error) throw new Error(`Failed to update match: ${error.message}`);
+}
+
+// ===== Subscribe to Match Changes =====
+
+export function subscribeToMatch(
+  matchId: string,
+  onUpdate: (match: Match) => void
+) {
+  const channel = supabase
+    .channel(`match-${matchId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'matches',
+        filter: `id=eq.${matchId}`,
+      },
+      (payload) => {
+        onUpdate(payload.new as Match);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
