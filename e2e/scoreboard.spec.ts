@@ -29,8 +29,7 @@ test.describe('Scoreboard Display', () => {
   test('shows game and set info in footer', async ({ page }) => {
     await createMatchViaUI(page);
 
-    await expect(page.getByText('Game 1')).toBeVisible();
-    await expect(page.getByText('Set 1')).toBeVisible();
+    await expect(page.getByText('Game 1 · Set 1')).toBeVisible();
   });
 
   test('shows QR Remote button', async ({ page }) => {
