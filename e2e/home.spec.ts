@@ -21,6 +21,7 @@ test.describe('Home Page', () => {
     await expect(page.getByText('New Match', { exact: false })).toBeVisible();
     await expect(page.getByText('Team A')).toBeVisible();
     await expect(page.getByText('Team B')).toBeVisible();
+    await expect(page.getByPlaceholder('Player name...')).toHaveCount(4);
     await expect(page.getByText('Format')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Match' })).toBeVisible();
   });
@@ -37,12 +38,12 @@ test.describe('Home Page', () => {
     await expect(page.getByText('Team A')).not.toBeVisible();
   });
 
-  test('Join navigates to remote view with entered code', async ({ page }) => {
+  test('Join navigates to scoreboard view with entered code', async ({ page }) => {
     await page.goto('/');
     await page.getByPlaceholder('Enter match code...').fill('test-match-123');
     await page.getByRole('button', { name: 'Join' }).click();
 
-    await expect(page).toHaveURL(/\/match\/test-match-123\/remote/);
+    await expect(page).toHaveURL(/\/match\/test-match-123\/scoreboard/);
   });
 
   test('Join works with Enter key', async ({ page }) => {
@@ -50,6 +51,6 @@ test.describe('Home Page', () => {
     await page.getByPlaceholder('Enter match code...').fill('abc123');
     await page.getByPlaceholder('Enter match code...').press('Enter');
 
-    await expect(page).toHaveURL(/\/match\/abc123\/remote/);
+    await expect(page).toHaveURL(/\/match\/abc123\/scoreboard/);
   });
 });

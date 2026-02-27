@@ -6,32 +6,37 @@ test.describe('Match Setup', () => {
     await page.getByRole('button', { name: 'New Match' }).click();
   });
 
-  test('can enter team names', async ({ page }) => {
-    const inputs = page.getByPlaceholder('Team name...');
-    await inputs.nth(0).fill('Los Lobos');
-    await inputs.nth(1).fill('Las Aguilas');
+  test('can enter player names', async ({ page }) => {
+    const inputs = page.getByPlaceholder('Player name...');
+    await inputs.nth(0).fill('Juan');
+    await inputs.nth(1).fill('Maria');
+    await inputs.nth(2).fill('Pedro');
+    await inputs.nth(3).fill('Ana');
 
-    await expect(inputs.nth(0)).toHaveValue('Los Lobos');
-    await expect(inputs.nth(1)).toHaveValue('Las Aguilas');
+    await expect(inputs.nth(0)).toHaveValue('Juan');
+    await expect(inputs.nth(1)).toHaveValue('Maria');
+    await expect(inputs.nth(2)).toHaveValue('Pedro');
+    await expect(inputs.nth(3)).toHaveValue('Ana');
   });
 
-  test('Start Match is disabled without both team names', async ({ page }) => {
+  test('Start Match is disabled without all four player names', async ({ page }) => {
     const startButton = page.getByRole('button', { name: 'Start Match' });
+    const inputs = page.getByPlaceholder('Player name...');
 
-    // Both empty — disabled
+    // All empty — disabled
     await expect(startButton).toBeDisabled();
 
-    // Only team A — still disabled
-    await page.getByPlaceholder('Team name...').nth(0).fill('Los Lobos');
+    // Only one player — still disabled
+    await inputs.nth(0).fill('Juan');
     await expect(startButton).toBeDisabled();
 
-    // Clear A, fill B — still disabled
-    await page.getByPlaceholder('Team name...').nth(0).clear();
-    await page.getByPlaceholder('Team name...').nth(1).fill('Las Aguilas');
+    // Three players — still disabled
+    await inputs.nth(1).fill('Maria');
+    await inputs.nth(2).fill('Pedro');
     await expect(startButton).toBeDisabled();
 
-    // Both filled — enabled
-    await page.getByPlaceholder('Team name...').nth(0).fill('Los Lobos');
+    // All four filled — enabled
+    await inputs.nth(3).fill('Ana');
     await expect(startButton).toBeEnabled();
   });
 
@@ -73,14 +78,17 @@ test.describe('Match Setup', () => {
   });
 
   test('Start Match creates match and navigates to scoreboard', async ({ page }) => {
-    await page.getByPlaceholder('Team name...').nth(0).fill('Los Toros');
-    await page.getByPlaceholder('Team name...').nth(1).fill('Las Panteras');
+    const inputs = page.getByPlaceholder('Player name...');
+    await inputs.nth(0).fill('Carlos');
+    await inputs.nth(1).fill('Diego');
+    await inputs.nth(2).fill('Sofia');
+    await inputs.nth(3).fill('Luna');
 
     await page.getByRole('button', { name: 'Start Match' }).click();
     await page.waitForURL(/\/match\/.*\/scoreboard/);
 
-    // Should show the team names on the scoreboard
-    await expect(page.getByText('LOS TOROS')).toBeVisible();
-    await expect(page.getByText('LAS PANTERAS')).toBeVisible();
+    // Should show auto-generated team names on the scoreboard
+    await expect(page.getByText('CARLOS & DIEGO')).toBeVisible();
+    await expect(page.getByText('SOFIA & LUNA')).toBeVisible();
   });
 });

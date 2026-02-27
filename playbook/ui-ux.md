@@ -15,10 +15,11 @@
 - Recent matches list (if any stored locally)
 
 ### 2. Match Setup (modal or page)
-- Team A: name + player names (optional)
-- Team B: name + player names (optional)
+- Team A: two player name inputs side by side (required)
+- Team B: two player name inputs side by side (required)
+- Team display name is auto-generated as "Player1 & Player2"
 - Format selector (MVP: just standard)
-- "Start Match" button
+- "Start Match" button (enabled when all 4 player names filled)
 - On start → creates match in Supabase → shows QR + scoreboard
 
 ### 3. Scoreboard (`/match/[id]/scoreboard`)
@@ -32,12 +33,12 @@
 
 ```
 ┌──────────────────────────────────────────┐
-│          SET 1    SET 2    SET 3          │
-│  TEAM A   6        3        -            │
-│  TEAM B   4        5        -            │
+│            SET 1    SET 2    SET 3        │
+│  P1 & P2    6        3        -          │
+│  P3 & P4    4        5        -          │
 │                                          │
 │         🎾                               │
-│     TEAM A          TEAM B               │
+│    P1 & P2          P3 & P4              │
 │       30      :       15                 │
 │                                          │
 │              Game 4 · Set 2              │
@@ -56,7 +57,7 @@
 ├───────────────┼─────────┼───────────────┤
 │               │         │               │
 │               │         │               │
-│    TEAM A     │  UNDO   │    TEAM B     │
+│   P1 & P2    │  UNDO   │   P3 & P4    │
 │     TAP       │   ↩     │     TAP       │
 │   TO SCORE    │         │   TO SCORE    │
 │               │         │               │

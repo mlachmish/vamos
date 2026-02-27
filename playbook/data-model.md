@@ -23,7 +23,7 @@ interface Match {
 }
 
 interface TeamInfo {
-  name: string;
+  name: string;                // Auto-generated as "player_1 & player_2"
   player_1: string;
   player_2: string;
 }

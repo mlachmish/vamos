@@ -34,19 +34,21 @@ export default function Home() {
   const router = useRouter();
   const [showSetup, setShowSetup] = useState(false);
   const [joinCode, setJoinCode] = useState('');
-  const [teamAName, setTeamAName] = useState('');
-  const [teamBName, setTeamBName] = useState('');
+  const [teamAP1, setTeamAP1] = useState('');
+  const [teamAP2, setTeamAP2] = useState('');
+  const [teamBP1, setTeamBP1] = useState('');
+  const [teamBP2, setTeamBP2] = useState('');
   const [format, setFormat] = useState<FormatPreset>('standard');
   const [creating, setCreating] = useState(false);
 
   async function handleCreate() {
-    if (!teamAName.trim() || !teamBName.trim()) return;
+    if (!teamAP1.trim() || !teamAP2.trim() || !teamBP1.trim() || !teamBP2.trim()) return;
     setCreating(true);
 
     try {
       const match = await createMatch(
-        { name: teamAName.trim(), player_1: '', player_2: '' },
-        { name: teamBName.trim(), player_1: '', player_2: '' },
+        { name: `${teamAP1.trim()} & ${teamAP2.trim()}`, player_1: teamAP1.trim(), player_2: teamAP2.trim() },
+        { name: `${teamBP1.trim()} & ${teamBP2.trim()}`, player_1: teamBP1.trim(), player_2: teamBP2.trim() },
         FORMAT_PRESETS[format].settings
       );
       router.push(`/match/${match.id}/scoreboard`);
@@ -59,7 +61,7 @@ export default function Home() {
     const code = joinCode.trim();
     if (!code) return;
     const matchId = code.includes('/') ? code.split('/').filter(Boolean).pop() : code;
-    router.push(`/match/${matchId}/remote`);
+    router.push(`/match/${matchId}/scoreboard`);
   }
 
   return (
@@ -104,24 +106,42 @@ export default function Home() {
             <div className="space-y-3">
               <div>
                 <label className="text-sm text-foreground/50 mb-1 block">Team A</label>
-                <input
-                  type="text"
-                  placeholder="Team name..."
-                  value={teamAName}
-                  onChange={(e) => setTeamAName(e.target.value)}
-                  className="w-full py-3 px-4 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
-                  autoFocus
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Player name..."
+                    value={teamAP1}
+                    onChange={(e) => setTeamAP1(e.target.value)}
+                    className="flex-1 py-3 px-4 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
+                    autoFocus
+                  />
+                  <input
+                    type="text"
+                    placeholder="Player name..."
+                    value={teamAP2}
+                    onChange={(e) => setTeamAP2(e.target.value)}
+                    className="flex-1 py-3 px-4 bg-background border-2 border-team-a/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-a"
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-sm text-foreground/50 mb-1 block">Team B</label>
-                <input
-                  type="text"
-                  placeholder="Team name..."
-                  value={teamBName}
-                  onChange={(e) => setTeamBName(e.target.value)}
-                  className="w-full py-3 px-4 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Player name..."
+                    value={teamBP1}
+                    onChange={(e) => setTeamBP1(e.target.value)}
+                    className="flex-1 py-3 px-4 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Player name..."
+                    value={teamBP2}
+                    onChange={(e) => setTeamBP2(e.target.value)}
+                    className="flex-1 py-3 px-4 bg-background border-2 border-team-b/30 rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-team-b"
+                  />
+                </div>
               </div>
             </div>
 
@@ -154,7 +174,7 @@ export default function Home() {
               </button>
               <button
                 onClick={handleCreate}
-                disabled={!teamAName.trim() || !teamBName.trim() || creating}
+                disabled={!teamAP1.trim() || !teamAP2.trim() || !teamBP1.trim() || !teamBP2.trim() || creating}
                 className="flex-2 py-3 px-6 bg-accent text-background font-bold rounded-xl hover:brightness-110 transition-all disabled:opacity-40 disabled:hover:brightness-100"
               >
                 {creating ? 'Creating...' : 'Start Match'}

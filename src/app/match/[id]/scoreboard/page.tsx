@@ -1,18 +1,28 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useCallback, useRef } from 'react';
 import { useMatch } from '@/lib/use-match';
 import { getGameScoreDisplay } from '@/lib/score-engine';
 import { QRCodeSVG } from 'qrcode.react';
+import { Team } from '@/lib/types';
 
 export default function ScoreboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { match, loading, error } = useMatch(id);
+  const { match, loading, error, score, undo } = useMatch(id);
   const [showQR, setShowQR] = useState(false);
+
+  // Debounce taps to prevent sweaty double-taps
+  const lastTapRef = useRef(0);
+  const debouncedScore = useCallback((team: Team) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 400) return;
+    lastTapRef.current = now;
+    score(team);
+  }, [score]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="text-2xl text-foreground/50 animate-pulse">Loading match...</div>
       </div>
     );
@@ -20,7 +30,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
 
   if (error || !match) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-2xl text-foreground/50">Match not found</div>
           <a href="/" className="text-accent hover:underline">Back to home</a>
@@ -31,15 +41,15 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
 
   const gameScore = getGameScoreDisplay(match.score.current_game);
   const currentSet = match.score.sets[match.score.current_set];
-  const remoteUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/match/${id}/remote`
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/match/${id}/scoreboard`
     : '';
 
   // Match complete overlay
   if (match.score.winner) {
     const winnerName = match.score.winner === 'a' ? match.team_a.name : match.team_b.name;
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-dvh flex flex-col items-center justify-center p-6 text-center">
         <div className="space-y-6">
           <div className="text-5xl font-bold animate-bounce">VAMOS!</div>
           <div className="text-3xl font-bold">
@@ -69,7 +79,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative select-none">
+    <div className="min-h-dvh flex flex-col relative select-none">
       {/* QR Code Modal */}
       {showQR && (
         <div
@@ -77,12 +87,12 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           onClick={() => setShowQR(false)}
         >
           <div className="bg-surface p-8 rounded-2xl text-center space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold">Scan to control</h3>
-            <QRCodeSVG value={remoteUrl} size={200} bgColor="#1a2236" fgColor="#f0f0f0" />
-            <p className="text-sm text-foreground/50 max-w-[200px] break-all">{remoteUrl}</p>
+            <h3 className="text-lg font-bold">Scan to join</h3>
+            <QRCodeSVG value={shareUrl} size={200} bgColor="#1a2236" fgColor="#f0f0f0" />
+            <p className="text-sm text-foreground/50 max-w-[200px] break-all">{shareUrl}</p>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(remoteUrl);
+                navigator.clipboard.writeText(shareUrl);
               }}
               className="text-accent text-sm hover:underline"
             >
@@ -93,7 +103,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Set Scores Header */}
-      <div className="flex justify-center gap-1 pt-4 pb-2">
+      <div className="flex justify-center gap-1 pt-4 pb-2 landscape:pt-2 landscape:pb-1">
         {match.score.sets.map((set, i) => (
           <div key={i} className={`px-3 py-1 rounded-lg text-sm font-mono font-bold ${
             i === match.score.current_set ? 'bg-surface-light' : 'bg-surface'
@@ -105,10 +115,14 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         ))}
       </div>
 
-      {/* Main Scoreboard */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 px-6">
-        {/* Team A */}
-        <div className="text-center space-y-1">
+      {/* Main Scoreboard — Portrait: vertical stack, Landscape: side-by-side */}
+      <div className="flex-1 flex flex-col landscape:flex-row items-center justify-center gap-8 landscape:gap-0 px-6 landscape:px-0">
+        {/* Team A — tap zone */}
+        <button
+          onClick={() => debouncedScore('a')}
+          className="flex-1 flex flex-col items-center justify-center w-full landscape:h-full active:bg-team-a/10 transition-colors rounded-2xl landscape:rounded-none"
+          data-testid="score-team-a"
+        >
           <div className="flex items-center justify-center gap-3">
             {match.score.serving_team === 'a' && (
               <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
@@ -117,17 +131,22 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
               {match.team_a.name}
             </div>
           </div>
-          <div className="text-[8rem] leading-none font-bold font-mono text-team-a">
+          <div className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-a">
             {gameScore.a}
           </div>
-        </div>
+        </button>
 
-        {/* Divider */}
-        <div className="text-foreground/20 text-4xl font-thin">vs</div>
+        {/* Divider — Portrait: "vs" text, Landscape: thin vertical line */}
+        <div className="landscape:hidden text-foreground/20 text-4xl font-thin">vs</div>
+        <div className="hidden landscape:block w-px self-stretch bg-foreground/10 mx-0" />
 
-        {/* Team B */}
-        <div className="text-center space-y-1">
-          <div className="text-[8rem] leading-none font-bold font-mono text-team-b">
+        {/* Team B — tap zone */}
+        <button
+          onClick={() => debouncedScore('b')}
+          className="flex-1 flex flex-col items-center justify-center w-full landscape:h-full active:bg-team-b/10 transition-colors rounded-2xl landscape:rounded-none"
+          data-testid="score-team-b"
+        >
+          <div className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-b">
             {gameScore.b}
           </div>
           <div className="flex items-center justify-center gap-3">
@@ -138,20 +157,34 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
               <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
             )}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Footer */}
-      <div className="flex justify-between items-center p-4">
+      <div className="flex justify-between items-center p-4 landscape:p-2">
         <div className="text-foreground/30 text-sm">
           {currentSet && `Game ${currentSet.games_a + currentSet.games_b + 1} · Set ${match.score.current_set + 1}`}
         </div>
-        <button
-          onClick={() => setShowQR(true)}
-          className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface"
-        >
-          QR Remote
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={undo}
+            disabled={match.point_history.length === 0}
+            className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface disabled:opacity-30 flex items-center gap-1.5"
+            data-testid="undo-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H7" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 6l-4 4 4 4" />
+            </svg>
+            Undo
+          </button>
+          <button
+            onClick={() => setShowQR(true)}
+            className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface"
+          >
+            QR Remote
+          </button>
+        </div>
       </div>
     </div>
   );

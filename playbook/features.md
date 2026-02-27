@@ -3,7 +3,7 @@
 ## MVP (v1)
 > The minimum to play a match with friends
 
-- [ ] Create a new match (enter team/player names)
+- [ ] Create a new match (enter 4 player names, team name auto-generated)
 - [ ] Scoreboard view — full-screen, beautiful, readable from across the court
 - [ ] Remote control view — simple tap buttons to award points
 - [ ] Real-time sync between scoreboard and remote via shared session

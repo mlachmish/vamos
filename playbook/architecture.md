@@ -21,7 +21,7 @@
 
 ## How a Match Session Works
 
-1. User creates a match on the home page (enters team names)
+1. User creates a match on the home page (enters 4 player names, team name auto-generated as "P1 & P2")
 2. A unique match ID is generated
 3. App shows a QR code + link for the remote control
 4. Scoreboard opens full-screen on the current device
