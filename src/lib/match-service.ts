@@ -66,8 +66,6 @@ export function subscribeToMatch(
   matchId: string,
   onUpdate: (match: Match) => void
 ) {
-  let realtimeWorking = false;
-
   const channel = supabase
     .channel(`match-${matchId}`)
     .on(
@@ -79,23 +77,14 @@ export function subscribeToMatch(
         filter: `id=eq.${matchId}`,
       },
       (payload) => {
-        realtimeWorking = true;
         onUpdate(payload.new as Match);
       }
     )
-    .subscribe((status) => {
-      console.log(`[Vamos] Realtime ${matchId}: ${status}`);
+    .subscribe((status, err) => {
+      if (err) console.error(`[Vamos] Realtime error:`, err);
     });
 
-  // Polling fallback — if realtime isn't delivering updates, poll every 2s
-  const poll = setInterval(async () => {
-    if (realtimeWorking) return;
-    const data = await getMatch(matchId);
-    if (data) onUpdate(data);
-  }, 2000);
-
   return () => {
-    clearInterval(poll);
     supabase.removeChannel(channel);
   };
 }
