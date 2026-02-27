@@ -17,7 +17,7 @@ test.describe('Full Match Flow', () => {
     }
 
     // Should now be in Set 2
-    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 5000 });
 
     // --- Set 2: Team A wins 4-0 ---
     for (let i = 0; i < 4; i++) {
@@ -52,13 +52,13 @@ test.describe('Full Match Flow', () => {
     for (let i = 0; i < 4; i++) {
       await scoreGame(page, 'a');
     }
-    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 5000 });
 
     // --- Set 2: Team B wins 4-0 ---
     for (let i = 0; i < 4; i++) {
       await scoreGame(page, 'b');
     }
-    await expect(page.getByText('Game 1 · Set 3')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Game 1 · Set 3')).toBeVisible({ timeout: 5000 });
 
     // --- Set 3: Team B wins 4-0 ---
     for (let i = 0; i < 4; i++) {

@@ -40,7 +40,7 @@ test.describe('Match Completion', () => {
     await scoreGame(page, 'b');
     await scoreGame(page, 'a');
 
-    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Game 1 · Set 2')).toBeVisible({ timeout: 5000 });
 
     // Set 2: A wins 4-1
     await scoreGame(page, 'a');

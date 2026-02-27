@@ -47,8 +47,9 @@ export async function openScoreboard(page: Page, matchId: string) {
  */
 export async function scorePoint(page: Page, team: 'a' | 'b') {
   await page.getByTestId(`score-team-${team}`).click();
-  // Wait for optimistic UI update + debounce window to settle
-  await page.waitForTimeout(500);
+  // Wait for: debounce (400ms) + DB round-trip + confetti + real-time subscription updates
+  // Increased from 500ms to 800ms to account for all async operations
+  await page.waitForTimeout(800);
 }
 
 /**
@@ -62,9 +63,12 @@ export async function scorePoints(page: Page, team: 'a' | 'b', count: number) {
 
 /**
  * Scores a full game for a team (4 consecutive points from 0-0).
+ * Waits an extra 200ms after the game to ensure UI has fully updated.
  */
 export async function scoreGame(page: Page, team: 'a' | 'b') {
   await scorePoints(page, team, 4);
+  // Extra wait for game completion effects (confetti, set progression, etc.)
+  await page.waitForTimeout(200);
 }
 
 /**

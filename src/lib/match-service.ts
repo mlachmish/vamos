@@ -50,6 +50,9 @@ export async function updateMatch(match: Match): Promise<void> {
       status: match.status,
       score: match.score,
       point_history: match.point_history,
+      settings: match.settings,
+      team_a: match.team_a,
+      team_b: match.team_b,
     })
     .eq('id', match.id);
 

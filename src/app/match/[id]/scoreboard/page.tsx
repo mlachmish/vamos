@@ -53,16 +53,21 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
     prevCompletedSetsRef.current = completedSets;
   }, [match]);
 
-  // Match timer
+  // Clock and match timer
+  const [clockTime, setClockTime] = useState('');
   const [elapsed, setElapsed] = useState('');
   useEffect(() => {
-    if (!match || match.score.winner) return;
+    if (!match) return;
     const start = new Date(match.created_at).getTime();
     const tick = () => {
-      const diff = Math.floor((Date.now() - start) / 1000);
-      const mins = Math.floor(diff / 60);
-      const secs = diff % 60;
-      setElapsed(`${mins}:${secs.toString().padStart(2, '0')}`);
+      const now = new Date();
+      setClockTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      if (!match.score.winner) {
+        const diff = Math.floor((now.getTime() - start) / 1000);
+        const mins = Math.floor(diff / 60);
+        const secs = diff % 60;
+        setElapsed(`${mins}:${secs.toString().padStart(2, '0')}`);
+      }
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -134,7 +139,9 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           <div className="flex gap-4 justify-center text-2xl font-mono">
             {match.score.sets.filter(s => s.winner).map((set, i) => (
               <div key={i} className="bg-surface px-4 py-2 rounded-xl">
-                {set.games_a}-{set.games_b}
+                <span className={set.games_a > set.games_b ? 'text-team-a font-black' : 'text-team-a/60'}>{set.games_a}</span>
+                <span className="text-foreground/30 mx-1">-</span>
+                <span className={set.games_b > set.games_a ? 'text-team-b font-black' : 'text-team-b/60'}>{set.games_b}</span>
               </div>
             ))}
           </div>
@@ -176,7 +183,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Set Scores Header */}
-      <div className="flex justify-center gap-3 pt-4 pb-3 landscape:pt-2 landscape:pb-2">
+      <div className="flex justify-center gap-4 pt-4 pb-3 landscape:pt-2 landscape:pb-2">
         {match.score.sets.map((set, i) => {
           const isCurrentSet = i === match.score.current_set;
           const isCompleted = set.winner !== null;
@@ -185,22 +192,22 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
 
           return (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className={`text-xs uppercase tracking-wider font-bold ${
+              <div className={`text-sm uppercase tracking-wider font-bold ${
                 isCurrentSet ? 'text-accent' : 'text-foreground/40'
               }`}>
                 Set {i + 1}
               </div>
-              <div className={`px-4 py-1.5 rounded-lg font-mono font-bold transition-all ${
+              <div className={`px-5 py-2 rounded-xl font-mono font-bold transition-all ${
                 isCurrentSet ? 'bg-surface-light ring-1 ring-accent/30' : 'bg-surface'
               } ${isCompleted && !isCurrentSet ? 'opacity-60' : ''}`}>
                 <span className={`transition-all ${
-                  teamAWinning ? 'text-team-a text-lg font-black' : 'text-team-a/80 text-base'
+                  teamAWinning ? 'text-team-a text-2xl font-black' : 'text-team-a/80 text-xl'
                 }`}>
                   {set.games_a}
                 </span>
-                <span className="text-foreground/30 mx-1.5 text-base">-</span>
+                <span className="text-foreground/30 mx-2 text-xl">-</span>
                 <span className={`transition-all ${
-                  teamBWinning ? 'text-team-b text-lg font-black' : 'text-team-b/80 text-base'
+                  teamBWinning ? 'text-team-b text-2xl font-black' : 'text-team-b/80 text-xl'
                 }`}>
                   {set.games_b}
                 </span>
@@ -260,18 +267,12 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         {/* Team B — tap zone */}
         <button
           onClick={() => debouncedScore('b')}
-          className={`flex-1 flex flex-col items-center justify-center w-full landscape:h-full transition-colors rounded-2xl landscape:rounded-none relative overflow-hidden ${
+          className={`flex-1 flex flex-col-reverse landscape:flex-col items-center justify-center w-full landscape:h-full transition-colors rounded-2xl landscape:rounded-none relative overflow-hidden ${
             tapPulseB ? 'bg-team-b/20' : 'active:bg-team-b/10'
           }`}
           data-testid="score-team-b"
         >
           {tapPulseB && <div className="absolute inset-0 bg-team-b/30 animate-tap-pulse" />}
-          <div
-            key={`score-b-${scorePopKey}`}
-            className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-b animate-score-pop"
-          >
-            {gameScore.b}
-          </div>
           <div className="flex items-center justify-center gap-3">
             <div className="text-2xl font-bold text-team-b uppercase tracking-wide">
               {match.team_b.name}
@@ -280,14 +281,27 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
               <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
             )}
           </div>
+          <div
+            key={`score-b-${scorePopKey}`}
+            className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-b animate-score-pop"
+          >
+            {gameScore.b}
+          </div>
         </button>
+      </div>
+
+      {/* Time Bar */}
+      <div className="flex justify-between items-center px-5 py-2.5 landscape:py-1.5 border-t border-foreground/10">
+        <span className="text-base landscape:text-sm font-mono text-foreground/50">{clockTime}</span>
+        {elapsed && (
+          <span className="text-base landscape:text-sm font-mono text-foreground/50">{elapsed}</span>
+        )}
       </div>
 
       {/* Footer */}
       <div className="flex justify-between items-center p-4 landscape:p-2">
-        <div className="text-foreground/30 text-sm flex items-center gap-2">
-          <span>{currentSet && `Game ${currentSet.games_a + currentSet.games_b + 1} · Set ${match.score.current_set + 1}`}</span>
-          {elapsed && <span className="font-mono">{elapsed}</span>}
+        <div className="text-foreground/30 text-sm">
+          {currentSet && `Game ${currentSet.games_a + currentSet.games_b + 1} · Set ${match.score.current_set + 1}`}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -306,7 +320,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
             onClick={() => setShowQR(true)}
             className="text-foreground/30 hover:text-foreground transition-colors text-sm px-3 py-1 rounded-lg bg-surface"
           >
-            QR Remote
+            Share
           </button>
         </div>
       </div>
