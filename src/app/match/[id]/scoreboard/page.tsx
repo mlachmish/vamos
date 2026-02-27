@@ -182,8 +182,8 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      {/* Header — Set scores, time, and actions */}
-      <div className="relative pt-4 pb-2 landscape:pt-2 landscape:pb-1">
+      {/* Header — Set scores and actions */}
+      <div className="relative pt-3 pb-1 landscape:pt-2 landscape:pb-1">
         {/* Action buttons — top right corner */}
         <div className="absolute top-2 right-3 flex items-center gap-1.5 z-10">
           <button
@@ -208,7 +208,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Set scores */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-[min(4vw,1.5rem)]">
           {match.score.sets.map((set, i) => {
             const isCurrentSet = i === match.score.current_set;
             const isCompleted = set.winner !== null;
@@ -216,23 +216,23 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
             const teamBWinning = set.games_b > set.games_a;
 
             return (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <div className={`text-sm uppercase tracking-wider font-bold ${
+              <div key={i} className="flex flex-col items-center gap-0.5">
+                <div className={`text-[min(3.5vw,1rem)] uppercase tracking-wider font-bold ${
                   isCurrentSet ? 'text-accent' : 'text-foreground/40'
                 }`}>
                   Set {i + 1}
                 </div>
-                <div className={`px-5 py-2 rounded-xl font-mono font-bold transition-all ${
+                <div className={`px-[min(4vw,1.5rem)] py-1.5 rounded-xl font-mono font-bold transition-all ${
                   isCurrentSet ? 'bg-surface-light ring-1 ring-accent/30' : 'bg-surface'
                 } ${isCompleted && !isCurrentSet ? 'opacity-60' : ''}`}>
                   <span className={`transition-all ${
-                    teamAWinning ? 'text-team-a text-2xl font-black' : 'text-team-a/80 text-xl'
+                    teamAWinning ? 'text-team-a text-[min(7vw,2.5rem)] font-black' : 'text-team-a/80 text-[min(6vw,2rem)]'
                   }`}>
                     {set.games_a}
                   </span>
-                  <span className="text-foreground/30 mx-2 text-xl">-</span>
+                  <span className="text-foreground/30 mx-[min(2vw,0.75rem)] text-[min(6vw,2rem)]">-</span>
                   <span className={`transition-all ${
-                    teamBWinning ? 'text-team-b text-2xl font-black' : 'text-team-b/80 text-xl'
+                    teamBWinning ? 'text-team-b text-[min(7vw,2.5rem)] font-black' : 'text-team-b/80 text-[min(6vw,2rem)]'
                   }`}>
                     {set.games_b}
                   </span>
@@ -259,7 +259,7 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Main Scoreboard — Portrait: vertical stack, Landscape: side-by-side */}
-      <div className={`flex-1 flex flex-col landscape:flex-row items-center justify-center gap-8 landscape:gap-0 px-6 landscape:px-0 transition-all ${
+      <div className={`flex-1 flex flex-col landscape:flex-row items-center justify-center gap-2 landscape:gap-0 px-4 landscape:px-0 transition-all ${
         match.score.current_game.is_tiebreak ? 'bg-accent/5 border-y-2 border-accent/20' : ''
       }`}>
         {/* Team A — tap zone */}
@@ -271,35 +271,35 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           data-testid="score-team-a"
         >
           {tapPulseA && <div className="absolute inset-0 bg-team-a/30 animate-tap-pulse" />}
-          <div className="flex items-center justify-center gap-4">
-            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+          <div className="flex items-center justify-center gap-[min(3vw,1rem)]">
+            <div className={`text-[min(7vw,2.5rem)] landscape:text-[min(3.5vw,2rem)] font-bold uppercase tracking-wide flex items-center gap-[min(2vw,0.5rem)] ${
               match.score.serving_team === 'a' && match.score.serving_player_a === 1 ? 'text-accent' : 'text-team-a'
             }`}>
               {match.score.serving_team === 'a' && match.score.serving_player_a === 1 && (
-                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                <div className="w-[min(3vw,1rem)] h-[min(3vw,1rem)] rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
               )}
               {match.team_a.player_1}
             </div>
-            <span className="text-foreground/20 text-lg">&</span>
-            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+            <span className="text-foreground/20 text-[min(5vw,1.5rem)]">&</span>
+            <div className={`text-[min(7vw,2.5rem)] landscape:text-[min(3.5vw,2rem)] font-bold uppercase tracking-wide flex items-center gap-[min(2vw,0.5rem)] ${
               match.score.serving_team === 'a' && match.score.serving_player_a === 2 ? 'text-accent' : 'text-team-a'
             }`}>
               {match.team_a.player_2}
               {match.score.serving_team === 'a' && match.score.serving_player_a === 2 && (
-                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                <div className="w-[min(3vw,1rem)] h-[min(3vw,1rem)] rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
               )}
             </div>
           </div>
           <div
             key={`score-a-${scorePopKey}`}
-            className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-a animate-score-pop"
+            className="text-[min(45vw,30vh)] landscape:text-[min(25vw,35vh)] leading-none font-bold font-mono text-team-a animate-score-pop"
           >
             {gameScore.a}
           </div>
         </button>
 
-        {/* Divider — Portrait: "vs" text, Landscape: thin vertical line */}
-        <div className="landscape:hidden text-foreground/20 text-4xl font-thin">vs</div>
+        {/* Divider — Portrait: thin line, Landscape: thin vertical line */}
+        <div className="landscape:hidden w-1/2 h-px bg-foreground/10" />
         <div className="hidden landscape:block w-px self-stretch bg-foreground/10 mx-0" />
 
         {/* Team B — tap zone */}
@@ -311,28 +311,28 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           data-testid="score-team-b"
         >
           {tapPulseB && <div className="absolute inset-0 bg-team-b/30 animate-tap-pulse" />}
-          <div className="flex items-center justify-center gap-4">
-            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+          <div className="flex items-center justify-center gap-[min(3vw,1rem)]">
+            <div className={`text-[min(7vw,2.5rem)] landscape:text-[min(3.5vw,2rem)] font-bold uppercase tracking-wide flex items-center gap-[min(2vw,0.5rem)] ${
               match.score.serving_team === 'b' && match.score.serving_player_b === 1 ? 'text-accent' : 'text-team-b'
             }`}>
               {match.score.serving_team === 'b' && match.score.serving_player_b === 1 && (
-                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                <div className="w-[min(3vw,1rem)] h-[min(3vw,1rem)] rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
               )}
               {match.team_b.player_1}
             </div>
-            <span className="text-foreground/20 text-lg">&</span>
-            <div className={`text-2xl font-bold uppercase tracking-wide flex items-center gap-2 ${
+            <span className="text-foreground/20 text-[min(5vw,1.5rem)]">&</span>
+            <div className={`text-[min(7vw,2.5rem)] landscape:text-[min(3.5vw,2rem)] font-bold uppercase tracking-wide flex items-center gap-[min(2vw,0.5rem)] ${
               match.score.serving_team === 'b' && match.score.serving_player_b === 2 ? 'text-accent' : 'text-team-b'
             }`}>
               {match.team_b.player_2}
               {match.score.serving_team === 'b' && match.score.serving_player_b === 2 && (
-                <div className="w-4 h-4 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                <div className="w-[min(3vw,1rem)] h-[min(3vw,1rem)] rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
               )}
             </div>
           </div>
           <div
             key={`score-b-${scorePopKey}`}
-            className="text-[8rem] landscape:text-[min(20vh,8rem)] leading-none font-bold font-mono text-team-b animate-score-pop"
+            className="text-[min(45vw,30vh)] landscape:text-[min(25vw,35vh)] leading-none font-bold font-mono text-team-b animate-score-pop"
           >
             {gameScore.b}
           </div>
@@ -341,8 +341,8 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
 
       {/* Match Timer — bottom bar */}
       {elapsed && (
-        <div className="flex justify-center items-center py-3 landscape:py-1.5">
-          <span className="text-4xl landscape:text-2xl font-mono font-bold text-foreground/50 tracking-wider">{elapsed}</span>
+        <div className="flex justify-center items-center py-2 landscape:py-1">
+          <span className="text-[min(10vw,4rem)] landscape:text-[min(5vw,2.5rem)] font-mono font-bold text-foreground/50 tracking-wider">{elapsed}</span>
         </div>
       )}
     </div>
