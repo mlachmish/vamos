@@ -62,7 +62,9 @@ export default function Home() {
   function handleJoin() {
     const code = joinCode.trim();
     if (!code) return;
-    const matchId = code.includes('/') ? code.split('/').filter(Boolean).pop() : code;
+    // Handle full URLs like https://vamos-padel.vercel.app/match/abc123/scoreboard
+    const matchPath = code.match(/\/match\/([^/]+)/);
+    const matchId = matchPath ? matchPath[1] : code;
     router.push(`/match/${matchId}/scoreboard`);
   }
 
@@ -87,7 +89,7 @@ export default function Home() {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Enter match code..."
+                placeholder="Code or link..."
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
