@@ -69,5 +69,18 @@ export function useMatch(matchId: string) {
     await updateMatch(updated);
   }, []);
 
-  return { match, loading, error, score, undo };
+  // End match early — declare leading team as winner
+  const endMatch = useCallback(async (winner: Team) => {
+    const current = matchRef.current;
+    if (!current || current.score.winner) return;
+
+    const updated = JSON.parse(JSON.stringify(current)) as Match;
+    updated.score.winner = winner;
+    updated.status = 'completed';
+    matchRef.current = updated;
+    setMatch(updated);
+    await updateMatch(updated);
+  }, []);
+
+  return { match, loading, error, score, undo, endMatch };
 }

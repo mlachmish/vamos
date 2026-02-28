@@ -1,15 +1,19 @@
 'use client';
 
 import { use, useState, useCallback, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMatch } from '@/lib/use-match';
 import { getGameScoreDisplay } from '@/lib/score-engine';
+import { createMatch } from '@/lib/match-service';
 import { QRCodeSVG } from 'qrcode.react';
-import { Team } from '@/lib/types';
+import { Team, TeamInfo } from '@/lib/types';
 import confetti from 'canvas-confetti';
 
 export default function ScoreboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { match, loading, error, score, undo } = useMatch(id);
+  const router = useRouter();
+  const { match, loading, error, score, undo, endMatch } = useMatch(id);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [scorePopKey, setScorePopKey] = useState(0);
   const [tapPulseA, setTapPulseA] = useState(false);
@@ -44,13 +48,17 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
       }, 1500);
       return () => clearInterval(loop);
     }
-    // Set won — medium burst
+    // Set won — 3 rounds of 100 from the winning side
     else if (prevCompletedSetsRef.current !== null && completedSets > prevCompletedSetsRef.current) {
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.7 } });
+      const lastWonSet = match.score.sets.filter(s => s.winner).slice(-1)[0];
+      const winnerY = lastWonSet?.winner === 'a' ? 0.3 : 0.7;
+      confetti({ particleCount: 100, spread: 100, origin: { x: 0.5, y: winnerY } });
+      setTimeout(() => confetti({ particleCount: 100, spread: 110, origin: { x: 0.4, y: winnerY } }), 300);
+      setTimeout(() => confetti({ particleCount: 100, spread: 120, origin: { x: 0.6, y: winnerY } }), 600);
     }
-    // Game won — small burst
+    // Game won — satisfying burst
     else if (prevTotalGamesRef.current !== null && totalGames > prevTotalGamesRef.current) {
-      confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+      confetti({ particleCount: 100, spread: 120, origin: { y: 0.6 } });
     }
 
     prevTotalGamesRef.current = totalGames;
@@ -126,6 +134,32 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
   // Match complete overlay
   if (match.score.winner) {
     const winnerName = match.score.winner === 'a' ? match.team_a.name : match.team_b.name;
+
+    const startNewMatch = async (teamA: TeamInfo, teamB: TeamInfo) => {
+      const newMatch = await createMatch(teamA, teamB, match.settings);
+      router.push(`/match/${newMatch.id}/scoreboard`);
+    };
+
+    const handleRematch = () => {
+      startNewMatch(match.team_a, match.team_b);
+    };
+
+    const handleShuffle = () => {
+      const players = [
+        match.team_a.player_1, match.team_a.player_2,
+        match.team_b.player_1, match.team_b.player_2,
+      ];
+      // Fisher-Yates shuffle
+      for (let i = players.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [players[i], players[j]] = [players[j], players[i]];
+      }
+      startNewMatch(
+        { name: `${players[0]} & ${players[1]}`, player_1: players[0], player_2: players[1] },
+        { name: `${players[2]} & ${players[3]}`, player_1: players[2], player_2: players[3] },
+      );
+    };
+
     return (
       <div className="min-h-dvh flex flex-col items-center justify-center p-6 text-center">
         <div className="space-y-6">
@@ -145,10 +179,22 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
               </div>
             ))}
           </div>
-          <div className="flex gap-4 justify-center pt-4">
+          <div className="flex flex-col gap-3 pt-4 w-full max-w-xs mx-auto">
+            <button
+              onClick={handleRematch}
+              className="py-3 px-6 bg-accent text-background font-bold rounded-xl hover:brightness-110 transition-all"
+            >
+              Rematch
+            </button>
+            <button
+              onClick={handleShuffle}
+              className="py-3 px-6 bg-surface text-foreground font-bold rounded-xl hover:brightness-125 transition-all"
+            >
+              Shuffle Teams
+            </button>
             <a
               href="/"
-              className="py-3 px-6 bg-accent text-background font-bold rounded-xl hover:brightness-110 transition-all"
+              className="py-3 px-6 text-foreground/40 font-bold rounded-xl hover:text-foreground/70 transition-all text-sm"
             >
               New Match
             </a>
@@ -182,6 +228,39 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
+      {/* End Match Confirmation */}
+      {showEndConfirm && (
+        <div
+          className="absolute inset-0 z-50 bg-black/80 flex items-center justify-center"
+          onClick={() => setShowEndConfirm(false)}
+        >
+          <div className="bg-surface p-8 rounded-2xl text-center space-y-5 max-w-xs" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold">End match?</h3>
+            <p className="text-foreground/60 text-sm">Who won?</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => { setShowEndConfirm(false); endMatch('a'); }}
+                className="py-3 px-6 bg-team-a/20 text-team-a font-bold rounded-xl hover:bg-team-a/30 transition-all"
+              >
+                {match.team_a.name}
+              </button>
+              <button
+                onClick={() => { setShowEndConfirm(false); endMatch('b'); }}
+                className="py-3 px-6 bg-team-b/20 text-team-b font-bold rounded-xl hover:bg-team-b/30 transition-all"
+              >
+                {match.team_b.name}
+              </button>
+              <button
+                onClick={() => setShowEndConfirm(false)}
+                className="py-2 text-foreground/40 text-sm hover:text-foreground/70 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header — Set scores and actions */}
       <div className="relative pt-3 pb-1 landscape:pt-2 landscape:pb-1">
         {/* Action buttons — top right corner */}
@@ -203,6 +282,14 @@ export default function ScoreboardPage({ params }: { params: Promise<{ id: strin
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowEndConfirm(true)}
+            className="text-foreground/25 hover:text-foreground/60 transition-colors p-1.5 rounded-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
             </svg>
           </button>
         </div>
