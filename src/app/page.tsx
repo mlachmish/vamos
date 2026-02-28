@@ -213,6 +213,7 @@ export default function Home() {
           </div>
         )}
       </div>
+      <div className="pb-4 text-center text-foreground/20 text-xs">Made by חלאס team 🎾</div>
     </main>
   );
 }
